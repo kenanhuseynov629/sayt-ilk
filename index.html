@@ -1,1 +1,64 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Maraqlı Sayt</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            margin-top: 100px;
+            transition: 0.5s;
+        }
 
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: white;
+            color: black;
+        }
+
+        #mesaj {
+            margin-top: 20px;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Salam! Bu mənim maraqlı saytım 😎</h1>
+
+    <button onclick="mesajGoster()">Mesaj göstər</button>
+
+    <div id="mesaj"></div>
+
+    <script>
+        const mesajlar = [
+            "Sən bacaracaqsan!",
+            "Bu gün yeni bir şey öyrən!",
+            "Heç vaxt təslim olma!",
+            "Kod yazmaq super gücdür!",
+            "Sən gələcəyin proqramçısısan!"
+        ];
+
+        function mesajGoster() {
+            let random = Math.floor(Math.random() * mesajlar.length);
+            document.getElementById("mesaj").innerText = mesajlar[random];
+
+            // fon rəngi dəyişir
+            let renk1 = Math.floor(Math.random()*255);
+            let renk2 = Math.floor(Math.random()*255);
+            let renk3 = Math.floor(Math.random()*255);
+
+            document.body.style.background =
+                "rgb(" + renk1 + "," + renk2 + "," + renk3 + ")";
+        }
+    </script>
+
+</body>
+</html>
