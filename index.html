@@ -2,63 +2,185 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Maraqlı Sayt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aysu, Rəsul və Kənan: Böyük Yarış</title>
     <style>
         body {
-            font-family: Arial;
-            text-align: center;
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
             color: white;
-            margin-top: 100px;
-            transition: 0.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { margin-bottom: 10px; color: #ffcc00; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        /* Skor lövhəsi */
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .player-card {
+            padding: 10px;
+            border-radius: 10px;
+            width: 80px;
+            transition: transform 0.3s;
+        }
+        .player-card.active { transform: scale(1.2); border: 2px solid white; }
+        .aysu { background-color: #ff4d94; }
+        .rasul { background-color: #4da6ff; }
+        .kenan { background-color: #4dff88; color: #1e1e2f; }
+
+        /* Çarxın dizaynı */
+        #wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #444;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: conic-gradient(
+                #ff4d94 0deg 120deg, 
+                #4da6ff 120deg 240deg, 
+                #4dff88 240deg 360deg
+            );
+        }
+        #pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ffcc00;
+            z-index: 10;
         }
 
         button {
+            background: #ffcc00;
+            border: none;
             padding: 15px 30px;
             font-size: 18px;
-            border: none;
-            border-radius: 10px;
+            font-weight: bold;
+            border-radius: 50px;
             cursor: pointer;
-            background: white;
-            color: black;
-        }
-
-        #mesaj {
+            transition: 0.3s;
             margin-top: 20px;
-            font-size: 22px;
+        }
+        button:hover { background: #e6b800; transform: translateY(-3px); }
+        button:disabled { background: #666; cursor: not-allowed; }
+
+        #log {
+            margin-top: 20px;
+            font-style: italic;
+            height: 50px;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
 
-    <h1>Salam! Bu mənim maraqlı saytım 😎</h1>
+    <h1>🎮 Böyük Yarış 🎮</h1>
 
-    <button onclick="mesajGoster()">Mesaj göstər</button>
+    <div class="game-container">
+        <div class="scoreboard">
+            <div class="player-card aysu" id="p1"><strong>Aysu</strong><br><span id="s1">0</span> xal</div>
+            <div class="player-card rasul" id="p2"><strong>Rəsul</strong><br><span id="s2">0</span> xal</div>
+            <div class="player-card kenan" id="p3"><strong>Kənan</strong><br><span id="s3">0</span> xal</div>
+        </div>
 
-    <div id="mesaj"></div>
+        <div id="wheel-container">
+            <div id="pointer"></div>
+            <div id="wheel"></div>
+        </div>
+
+        <button id="spinBtn" onclick="spinWheel()">Fırlat!</button>
+
+        <div id="log">Oyuna başlamaq üçün düyməni sıxın!</div>
+    </div>
 
     <script>
-        const mesajlar = [
-            "Sən bacaracaqsan!",
-            "Bu gün yeni bir şey öyrən!",
-            "Heç vaxt təslim olma!",
-            "Kod yazmaq super gücdür!",
-            "Sən gələcəyin proqramçısısan!"
-        ];
+        let scores = { aysu: 0, rasul: 0, kenan: 0 };
+        let currentRotation = 0;
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const log = document.getElementById('log');
 
-        function mesajGoster() {
-            let random = Math.floor(Math.random() * mesajlar.length);
-            document.getElementById("mesaj").innerText = mesajlar[random];
+        function spinWheel() {
+            spinBtn.disabled = true;
+            log.innerText = "Çarx fırlanır...";
 
-            // fon rəngi dəyişir
-            let renk1 = Math.floor(Math.random()*255);
-            let renk2 = Math.floor(Math.random()*255);
-            let renk3 = Math.floor(Math.random()*255);
+            // Təsadüfi fırlanma dərəcəsi (minimum 5 tam dövr + təsadüfi)
+            const addedRotation = Math.floor(Math.random() * 360) + 1800;
+            currentRotation += addedRotation;
+            
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            document.body.style.background =
-                "rgb(" + renk1 + "," + renk2 + "," + renk3 + ")";
+            setTimeout(() => {
+                const finalDegree = currentRotation % 360;
+                determineWinner(finalDegree);
+                spinBtn.disabled = false;
+            }, 4000);
+        }
+
+        function determineWinner(deg) {
+            // Pointer yuxarıdadır (0 dərəcə). Çarx saat əqrəbi istiqamətində dönür.
+            // 0-120: Kənan (yaşıl) - çünki çarx dönəndə yaşıl hissə yuxarı gəlir
+            // 120-240: Rəsul (mavi)
+            // 240-360: Aysu (çəhrayı)
+            
+            // Hesablama çarxın əksinə aparılır (çünki biz çarxı yox, dərəcəni fırlatdıq)
+            let winner = "";
+            let realDeg = 360 - (deg % 360);
+
+            if (realDeg >= 0 && realDeg < 120) {
+                winner = "aysu";
+                log.innerText = "🎉 Möhtəşəm! Aysu 10 xal qazandı!";
+            } else if (realDeg >= 120 && realDeg < 240) {
+                winner = "rasul";
+                log.innerText = "🚀 Əla! Rəsul 10 xal qazandı!";
+            } else {
+                winner = "kenan";
+                log.innerText = "🔥 Super! Kənan 10 xal qazandı!";
+            }
+
+            scores[winner] += 10;
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            document.getElementById('s1').innerText = scores.aysu;
+            document.getElementById('s2').innerText = scores.rasul;
+            document.getElementById('s3').innerText = scores.kenan;
+
+            // Aktiv oyunçunu işıqlandır
+            document.querySelectorAll('.player-card').forEach(p => p.classList.remove('active'));
+            if (scores.aysu >= scores.rasul && scores.aysu >= scores.kenan) document.getElementById('p1').classList.add('active');
+            if (scores.rasul >= scores.aysu && scores.rasul >= scores.kenan) document.getElementById('p2').classList.add('active');
+            if (scores.kenan >= scores.aysu && scores.kenan >= scores.rasul) document.getElementById('p3').classList.add('active');
         }
     </script>
-
 </body>
 </html>
