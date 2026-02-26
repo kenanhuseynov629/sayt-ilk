@@ -3,224 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-O Oyunu: Kim Güclüdür?</title>
+    <title>6vs6 Taktika Lövhəsi</title>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --x-color: #f43f5e;
-            --o-color: #38bdf8;
-            --accent: #fbbf24;
+            --pitch-green: #2e7d32;
+            --line-white: rgba(255, 255, 255, 0.8);
+            --player-red: #d32f2f;
+            --player-bench: #546e7a;
         }
 
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: #1a1a1a;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
-        .setup-screen, .game-screen {
-            background: var(--card);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 320px;
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .hidden { display: none; }
-
-        input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #475569;
-            background: #334155;
-            color: white;
-            outline: none;
-        }
-
-        button {
-            background: var(--accent);
-            border: none;
-            padding: 12px 25px;
-            font-weight: bold;
+        /* Meydança Dizaynı */
+        #pitch {
+            width: 350px;
+            height: 500px;
+            background-color: var(--pitch-green);
+            border: 4px solid var(--line-white);
+            position: relative;
             border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        button:hover { transform: scale(1.05); opacity: 0.9; }
-
-        .status { margin-bottom: 15px; font-size: 1.2rem; font-weight: bold; }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 10px;
-            margin-bottom: 20px;
+        /* Meydan xətləri */
+        #pitch::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--line-white);
         }
 
-        .cell {
-            background: #334155;
-            border-radius: 12px;
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--line-white);
+            border-radius: 50%;
+        }
+
+        /* Oyunçu Dizaynı */
+        .player {
+            width: 45px;
+            height: 45px;
+            background-color: var(--player-red);
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: move;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .player span {
+            pointer-events: none;
+            padding: 2px;
+        }
+
+        /* İdarəetmə Paneli */
+        .controls {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 15px;
+            width: 300px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background-color: #ff9800;
+            color: black;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
         }
 
-        .cell:hover { background: #475569; }
-        .cell.x { color: var(--x-color); }
-        .cell.o { color: var(--o-color); }
-        .cell.winner { background: #15803d; animation: pulse 1s infinite; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
+        .bench {
+            margin-top: 20px;
+            border-top: 1px solid #444;
+            padding-top: 10px;
         }
 
-        .score-board { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.9rem; }
+        .bench-player {
+            background: var(--player-bench);
+            padding: 5px 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-msg {
+            color: #ffeb3b;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="setup" class="setup-screen">
-        <h2>🎮 X-O Yarışı</h2>
-        <input type="text" id="p1Input" placeholder="Oyunçu 1 (X)" maxlength="10">
-        <input type="text" id="p2Input" placeholder="Oyunçu 2 (O)" maxlength="10">
-        <br>
-        <button onclick="startGame()">Oyuna Başla</button>
-    </div>
+    <h1>⚽ 6 vs 6 Taktika Meneceri</h1>
+    
+    <div class="container">
+        <div id="pitch">
+            <div class="center-circle"></div>
+            </div>
 
-    <div id="game" class="game-screen hidden">
-        <div id="turnStatus" class="status">Növbə: ...</div>
-        
-        <div class="grid" id="board">
-            <div class="cell" onclick="makeMove(0)"></div>
-            <div class="cell" onclick="makeMove(1)"></div>
-            <div class="cell" onclick="makeMove(2)"></div>
-            <div class="cell" onclick="makeMove(3)"></div>
-            <div class="cell" onclick="makeMove(4)"></div>
-            <div class="cell" onclick="makeMove(5)"></div>
-            <div class="cell" onclick="makeMove(6)"></div>
-            <div class="cell" onclick="makeMove(7)"></div>
-            <div class="cell" onclick="makeMove(8)"></div>
-        </div>
+        <div class="controls">
+            <div id="msg" class="status-msg">Oyunçuları əlavə edin (Maks 8)</div>
+            <input type="text" id="playerName" placeholder="Oyunçu adı (məs: Kənan)">
+            <button onclick="addPlayer()">Heyətə Əlavə Et</button>
+            
+            <div class="bench">
+                <h3>🔄 Ehtiyat Oyunçular</h3>
+                <div id="benchList"></div>
+            </div>
 
-        <button onclick="resetBoard()">Yenidən Başla</button>
-        
-        <div class="score-board">
-            <div><span id="name1">P1</span>: <span id="score1">0</span></div>
-            <div>Heç-heçə: <span id="draws">0</span></div>
-            <div><span id="name2">P2</span>: <span id="score2">0</span></div>
+            <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa;">
+                * Oyunçuları meydanda sürüşdürərək yerini dəyişə bilərsiniz.
+            </div>
         </div>
     </div>
 
     <script>
-        let players = { x: "Oyunçu 1", o: "Oyunçu 2" };
-        let scores = { x: 0, o: 0, draws: 0 };
-        let currentPlayer = "x";
-        let board = ["", "", "", "", "", "", "", "", ""];
-        let gameActive = true;
+        let playersCount = 0;
+        const pitch = document.getElementById('pitch');
+        const benchList = document.getElementById('benchList');
+        const msg = document.getElementById('msg');
 
-        function startGame() {
-            const p1 = document.getElementById('p1Input').value;
-            const p2 = document.getElementById('p2Input').value;
+        function addPlayer() {
+            const nameInput = document.getElementById('playerName');
+            const name = nameInput.value.trim();
+
+            if (!name) return;
+            if (playersCount >= 8) {
+                msg.innerText = "❌ Maksimum 8 oyunçu limitinə çatdınız!";
+                return;
+            }
+
+            playersCount++;
+
+            if (playersCount <= 6) {
+                // Meydana əlavə et (Start heyət)
+                createPitchPlayer(name);
+                msg.innerText = `✅ ${name} start heyətə əlavə olundu.`;
+            } else {
+                // Ehtiyata əlavə et
+                createBenchPlayer(name);
+                msg.innerText = `✅ ${name} ehtiyata əlavə olundu.`;
+            }
+
+            nameInput.value = "";
+        }
+
+        function createPitchPlayer(name) {
+            const p = document.createElement('div');
+            p.className = 'player';
+            p.style.top = (20 + (playersCount * 50)) + "px"; // Avtomatik düzülüş başlanğıcı
+            p.style.left = "150px";
+            p.innerHTML = `<span>${name}</span>`;
             
-            if(p1) players.x = p1;
-            if(p2) players.y = p2;
+            // Sürüşdürmə funksiyası (Drag and Drop)
+            p.onmousedown = function(event) {
+                let shiftX = event.clientX - p.getBoundingClientRect().left;
+                let shiftY = event.clientY - p.getBoundingClientRect().top;
 
-            document.getElementById('name1').innerText = players.x;
-            document.getElementById('name2').innerText = players.o;
-            
-            document.getElementById('setup').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
-            updateStatus();
-        }
+                function moveAt(pageX, pageY) {
+                    let newLeft = pageX - pitch.offsetLeft - shiftX;
+                    let newTop = pageY - pitch.offsetTop - shiftY;
 
-        function updateStatus() {
-            const name = currentPlayer === "x" ? players.x : players.o;
-            document.getElementById('turnStatus').innerText = `Növbə: ${name} (${currentPlayer.toUpperCase()})`;
-        }
+                    // Meydança sərhədləri daxilində saxla
+                    if (newLeft < 0) newLeft = 0;
+                    if (newTop < 0) newTop = 0;
+                    if (newLeft > pitch.clientWidth - 45) newLeft = pitch.clientWidth - 45;
+                    if (newTop > pitch.clientHeight - 45) newTop = pitch.clientHeight - 45;
 
-        function makeMove(index) {
-            if (board[index] === "" && gameActive) {
-                board[index] = currentPlayer;
-                const cells = document.getElementsByClassName('cell');
-                cells[index].innerText = currentPlayer.toUpperCase();
-                cells[index].classList.add(currentPlayer);
-                
-                checkWinner();
-                if (gameActive) {
-                    currentPlayer = currentPlayer === "x" ? "o" : "x";
-                    updateStatus();
+                    p.style.left = newLeft + 'px';
+                    p.style.top = newTop + 'px';
                 }
-            }
-        }
 
-        function checkWinner() {
-            const winConditions = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Üfüqi
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Şaquli
-                [0, 4, 8], [2, 4, 6]             // Diaqonal
-            ];
-
-            for (let condition of winConditions) {
-                const [a, b, c] = condition;
-                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-                    gameActive = false;
-                    highlightWinner(condition);
-                    scores[currentPlayer]++;
-                    updateScores();
-                    document.getElementById('turnStatus').innerText = `🎉 ${players[currentPlayer]} QALİBDİR!`;
-                    return;
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
                 }
-            }
 
-            if (!board.includes("")) {
-                gameActive = false;
-                scores.draws++;
-                updateScores();
-                document.getElementById('turnStatus').innerText = "🤝 Heç-heçə!";
-            }
+                document.addEventListener('mousemove', onMouseMove);
+
+                document.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.onmouseup = null;
+                };
+            };
+
+            p.ondragstart = function() { return false; };
+            pitch.appendChild(p);
         }
 
-        function highlightWinner(indices) {
-            const cells = document.getElementsByClassName('cell');
-            indices.forEach(i => cells[i].classList.add('winner'));
-        }
-
-        function updateScores() {
-            document.getElementById('score1').innerText = scores.x;
-            document.getElementById('score2').innerText = scores.o;
-            document.getElementById('draws').innerText = scores.draws;
-        }
-
-        function resetBoard() {
-            board = ["", "", "", "", "", "", "", "", ""];
-            gameActive = true;
-            currentPlayer = "x";
-            const cells = document.getElementsByClassName('cell');
-            for (let cell of cells) {
-                cell.innerText = "";
-                cell.className = "cell";
-            }
-            updateStatus();
+        function createBenchPlayer(name) {
+            const bP = document.createElement('div');
+            bP.className = 'bench-player';
+            bP.innerHTML = `<span>${name}</span> <b>(Yedək)</b>`;
+            benchList.appendChild(bP);
         }
     </script>
 </body>
