@@ -3,183 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aysu, Rəsul və Kənan: Böyük Yarış</title>
+    <title>X-O Oyunu: Kim Güclüdür?</title>
     <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --x-color: #f43f5e;
+            --o-color: #38bdf8;
+            --accent: #fbbf24;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
-            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
         }
 
-        h1 { margin-bottom: 10px; color: #ffcc00; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
-
-        .game-container {
-            background: rgba(255, 255, 255, 0.1);
+        .setup-screen, .game-screen {
+            background: var(--card);
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             text-align: center;
-            max-width: 500px;
-            width: 100%;
+            width: 320px;
         }
 
-        /* Skor lövhəsi */
-        .scoreboard {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-        }
-        .player-card {
+        .hidden { display: none; }
+
+        input {
+            width: 80%;
             padding: 10px;
-            border-radius: 10px;
-            width: 80px;
-            transition: transform 0.3s;
-        }
-        .player-card.active { transform: scale(1.2); border: 2px solid white; }
-        .aysu { background-color: #ff4d94; }
-        .rasul { background-color: #4da6ff; }
-        .kenan { background-color: #4dff88; color: #1e1e2f; }
-
-        /* Çarxın dizaynı */
-        #wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 20px auto;
-        }
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 8px solid #444;
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-            background: conic-gradient(
-                #ff4d94 0deg 120deg, 
-                #4da6ff 120deg 240deg, 
-                #4dff88 240deg 360deg
-            );
-        }
-        #pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid #ffcc00;
-            z-index: 10;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #334155;
+            color: white;
+            outline: none;
         }
 
         button {
-            background: #ffcc00;
+            background: var(--accent);
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 25px;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+
+        button:hover { transform: scale(1.05); opacity: 0.9; }
+
+        .status { margin-bottom: 15px; font-size: 1.2rem; font-weight: bold; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            background: #334155;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
-            margin-top: 20px;
         }
-        button:hover { background: #e6b800; transform: translateY(-3px); }
-        button:disabled { background: #666; cursor: not-allowed; }
 
-        #log {
-            margin-top: 20px;
-            font-style: italic;
-            height: 50px;
-            color: #ccc;
+        .cell:hover { background: #475569; }
+        .cell.x { color: var(--x-color); }
+        .cell.o { color: var(--o-color); }
+        .cell.winner { background: #15803d; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
+
+        .score-board { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <h1>🎮 Böyük Yarış 🎮</h1>
+    <div id="setup" class="setup-screen">
+        <h2>🎮 X-O Yarışı</h2>
+        <input type="text" id="p1Input" placeholder="Oyunçu 1 (X)" maxlength="10">
+        <input type="text" id="p2Input" placeholder="Oyunçu 2 (O)" maxlength="10">
+        <br>
+        <button onclick="startGame()">Oyuna Başla</button>
+    </div>
 
-    <div class="game-container">
-        <div class="scoreboard">
-            <div class="player-card aysu" id="p1"><strong>Aysu</strong><br><span id="s1">0</span> xal</div>
-            <div class="player-card rasul" id="p2"><strong>Rəsul</strong><br><span id="s2">0</span> xal</div>
-            <div class="player-card kenan" id="p3"><strong>Kənan</strong><br><span id="s3">0</span> xal</div>
+    <div id="game" class="game-screen hidden">
+        <div id="turnStatus" class="status">Növbə: ...</div>
+        
+        <div class="grid" id="board">
+            <div class="cell" onclick="makeMove(0)"></div>
+            <div class="cell" onclick="makeMove(1)"></div>
+            <div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div>
+            <div class="cell" onclick="makeMove(4)"></div>
+            <div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div>
+            <div class="cell" onclick="makeMove(7)"></div>
+            <div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <div id="wheel-container">
-            <div id="pointer"></div>
-            <div id="wheel"></div>
+        <button onclick="resetBoard()">Yenidən Başla</button>
+        
+        <div class="score-board">
+            <div><span id="name1">P1</span>: <span id="score1">0</span></div>
+            <div>Heç-heçə: <span id="draws">0</span></div>
+            <div><span id="name2">P2</span>: <span id="score2">0</span></div>
         </div>
-
-        <button id="spinBtn" onclick="spinWheel()">Fırlat!</button>
-
-        <div id="log">Oyuna başlamaq üçün düyməni sıxın!</div>
     </div>
 
     <script>
-        let scores = { aysu: 0, rasul: 0, kenan: 0 };
-        let currentRotation = 0;
-        const wheel = document.getElementById('wheel');
-        const spinBtn = document.getElementById('spinBtn');
-        const log = document.getElementById('log');
+        let players = { x: "Oyunçu 1", o: "Oyunçu 2" };
+        let scores = { x: 0, o: 0, draws: 0 };
+        let currentPlayer = "x";
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
 
-        function spinWheel() {
-            spinBtn.disabled = true;
-            log.innerText = "Çarx fırlanır...";
-
-            // Təsadüfi fırlanma dərəcəsi (minimum 5 tam dövr + təsadüfi)
-            const addedRotation = Math.floor(Math.random() * 360) + 1800;
-            currentRotation += addedRotation;
+        function startGame() {
+            const p1 = document.getElementById('p1Input').value;
+            const p2 = document.getElementById('p2Input').value;
             
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            if(p1) players.x = p1;
+            if(p2) players.y = p2;
 
-            setTimeout(() => {
-                const finalDegree = currentRotation % 360;
-                determineWinner(finalDegree);
-                spinBtn.disabled = false;
-            }, 4000);
+            document.getElementById('name1').innerText = players.x;
+            document.getElementById('name2').innerText = players.o;
+            
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game').classList.remove('hidden');
+            updateStatus();
         }
 
-        function determineWinner(deg) {
-            // Pointer yuxarıdadır (0 dərəcə). Çarx saat əqrəbi istiqamətində dönür.
-            // 0-120: Kənan (yaşıl) - çünki çarx dönəndə yaşıl hissə yuxarı gəlir
-            // 120-240: Rəsul (mavi)
-            // 240-360: Aysu (çəhrayı)
-            
-            // Hesablama çarxın əksinə aparılır (çünki biz çarxı yox, dərəcəni fırlatdıq)
-            let winner = "";
-            let realDeg = 360 - (deg % 360);
+        function updateStatus() {
+            const name = currentPlayer === "x" ? players.x : players.o;
+            document.getElementById('turnStatus').innerText = `Növbə: ${name} (${currentPlayer.toUpperCase()})`;
+        }
 
-            if (realDeg >= 0 && realDeg < 120) {
-                winner = "aysu";
-                log.innerText = "🎉 Möhtəşəm! Aysu 10 xal qazandı!";
-            } else if (realDeg >= 120 && realDeg < 240) {
-                winner = "rasul";
-                log.innerText = "🚀 Əla! Rəsul 10 xal qazandı!";
-            } else {
-                winner = "kenan";
-                log.innerText = "🔥 Super! Kənan 10 xal qazandı!";
+        function makeMove(index) {
+            if (board[index] === "" && gameActive) {
+                board[index] = currentPlayer;
+                const cells = document.getElementsByClassName('cell');
+                cells[index].innerText = currentPlayer.toUpperCase();
+                cells[index].classList.add(currentPlayer);
+                
+                checkWinner();
+                if (gameActive) {
+                    currentPlayer = currentPlayer === "x" ? "o" : "x";
+                    updateStatus();
+                }
+            }
+        }
+
+        function checkWinner() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Üfüqi
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Şaquli
+                [0, 4, 8], [2, 4, 6]             // Diaqonal
+            ];
+
+            for (let condition of winConditions) {
+                const [a, b, c] = condition;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    gameActive = false;
+                    highlightWinner(condition);
+                    scores[currentPlayer]++;
+                    updateScores();
+                    document.getElementById('turnStatus').innerText = `🎉 ${players[currentPlayer]} QALİBDİR!`;
+                    return;
+                }
             }
 
-            scores[winner] += 10;
-            updateScoreboard();
+            if (!board.includes("")) {
+                gameActive = false;
+                scores.draws++;
+                updateScores();
+                document.getElementById('turnStatus').innerText = "🤝 Heç-heçə!";
+            }
         }
 
-        function updateScoreboard() {
-            document.getElementById('s1').innerText = scores.aysu;
-            document.getElementById('s2').innerText = scores.rasul;
-            document.getElementById('s3').innerText = scores.kenan;
+        function highlightWinner(indices) {
+            const cells = document.getElementsByClassName('cell');
+            indices.forEach(i => cells[i].classList.add('winner'));
+        }
 
-            // Aktiv oyunçunu işıqlandır
-            document.querySelectorAll('.player-card').forEach(p => p.classList.remove('active'));
-            if (scores.aysu >= scores.rasul && scores.aysu >= scores.kenan) document.getElementById('p1').classList.add('active');
-            if (scores.rasul >= scores.aysu && scores.rasul >= scores.kenan) document.getElementById('p2').classList.add('active');
-            if (scores.kenan >= scores.aysu && scores.kenan >= scores.rasul) document.getElementById('p3').classList.add('active');
+        function updateScores() {
+            document.getElementById('score1').innerText = scores.x;
+            document.getElementById('score2').innerText = scores.o;
+            document.getElementById('draws').innerText = scores.draws;
+        }
+
+        function resetBoard() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            currentPlayer = "x";
+            const cells = document.getElementsByClassName('cell');
+            for (let cell of cells) {
+                cell.innerText = "";
+                cell.className = "cell";
+            }
+            updateStatus();
         }
     </script>
 </body>
