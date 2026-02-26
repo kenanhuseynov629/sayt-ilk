@@ -2,8 +2,8 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>6vs6 Taktika Lövhəsi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>6vs6 Taktika - Mobil Dəstəkli</title>
     <style>
         :root {
             --pitch-green: #2e7d32;
@@ -20,7 +20,8 @@
             flex-direction: column;
             align-items: center;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            touch-action: manipulation; /* Səhifənin təsadüfən sürüşməsini azaldır */
         }
 
         .container {
@@ -28,21 +29,20 @@
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
         }
 
-        /* Meydança Dizaynı */
         #pitch {
-            width: 350px;
-            height: 500px;
+            width: 320px;
+            height: 480px;
             background-color: var(--pitch-green);
             border: 4px solid var(--line-white);
             position: relative;
             border-radius: 10px;
-            overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            touch-action: none; /* Meydança daxilində skrollu söndürürük ki, oyunçu rahat hərəkət etsin */
         }
 
-        /* Meydan xətləri */
         #pitch::before {
             content: "";
             position: absolute;
@@ -58,13 +58,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border: 2px solid var(--line-white);
             border-radius: 50%;
         }
 
-        /* Oyunçu Dizaynı */
         .player {
             width: 45px;
             height: 45px;
@@ -80,80 +79,56 @@
             cursor: move;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            z-index: 10;
+            z-index: 100;
+            user-select: none;
+            touch-action: none; /* Mobil üçün vacibdir */
         }
 
-        .player span {
-            pointer-events: none;
-            padding: 2px;
-        }
-
-        /* İdarəetmə Paneli */
         .controls {
             background: #2d2d2d;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             width: 300px;
         }
 
         input, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 5px 0;
-            border-radius: 5px;
+            border-radius: 8px;
             border: none;
+            box-sizing: border-box;
         }
 
-        button {
-            background-color: #ff9800;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        button { background-color: #ff9800; color: black; font-weight: bold; }
 
-        .bench {
-            margin-top: 20px;
-            border-top: 1px solid #444;
-            padding-top: 10px;
-        }
-
+        .bench { margin-top: 15px; border-top: 1px solid #444; }
         .bench-player {
             background: var(--player-bench);
-            padding: 5px 10px;
+            padding: 8px;
             margin: 5px 0;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .status-msg {
-            color: #ffeb3b;
+            border-radius: 5px;
             font-size: 0.9rem;
-            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <h1>⚽ 6 vs 6 Taktika Meneceri</h1>
+    <h2>⚽ Taktika Lövhəsi (6vs6)</h2>
     
     <div class="container">
         <div id="pitch">
             <div class="center-circle"></div>
-            </div>
+        </div>
 
         <div class="controls">
-            <div id="msg" class="status-msg">Oyunçuları əlavə edin (Maks 8)</div>
-            <input type="text" id="playerName" placeholder="Oyunçu adı (məs: Kənan)">
-            <button onclick="addPlayer()">Heyətə Əlavə Et</button>
+            <input type="text" id="playerName" placeholder="Oyunçu adı">
+            <button onclick="addPlayer()">Əlavə Et</button>
+            <div id="msg" style="color: #ffcc00; font-size: 0.8rem; margin: 5px 0;"></div>
             
             <div class="bench">
-                <h3>🔄 Ehtiyat Oyunçular</h3>
+                <h3>🔄 Yedəklər (Maks 8)</h3>
                 <div id="benchList"></div>
-            </div>
-
-            <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa;">
-                * Oyunçuları meydanda sürüşdürərək yerini dəyişə bilərsiniz.
             </div>
         </div>
     </div>
@@ -162,7 +137,6 @@
         let playersCount = 0;
         const pitch = document.getElementById('pitch');
         const benchList = document.getElementById('benchList');
-        const msg = document.getElementById('msg');
 
         function addPlayer() {
             const nameInput = document.getElementById('playerName');
@@ -170,72 +144,67 @@
 
             if (!name) return;
             if (playersCount >= 8) {
-                msg.innerText = "❌ Maksimum 8 oyunçu limitinə çatdınız!";
+                document.getElementById('msg').innerText = "Limit: 8 oyunçu.";
                 return;
             }
 
             playersCount++;
-
             if (playersCount <= 6) {
-                // Meydana əlavə et (Start heyət)
-                createPitchPlayer(name);
-                msg.innerText = `✅ ${name} start heyətə əlavə olundu.`;
+                createDraggablePlayer(name);
             } else {
-                // Ehtiyata əlavə et
-                createBenchPlayer(name);
-                msg.innerText = `✅ ${name} ehtiyata əlavə olundu.`;
+                const bP = document.createElement('div');
+                bP.className = 'bench-player';
+                bP.innerHTML = `🏃 ${name} (Yedək)`;
+                benchList.appendChild(bP);
             }
-
             nameInput.value = "";
         }
 
-        function createPitchPlayer(name) {
+        function createDraggablePlayer(name) {
             const p = document.createElement('div');
             p.className = 'player';
-            p.style.top = (20 + (playersCount * 50)) + "px"; // Avtomatik düzülüş başlanğıcı
-            p.style.left = "150px";
+            p.style.top = (20 + (playersCount * 40)) + "px";
+            p.style.left = "20px";
             p.innerHTML = `<span>${name}</span>`;
             
-            // Sürüşdürmə funksiyası (Drag and Drop)
-            p.onmousedown = function(event) {
-                let shiftX = event.clientX - p.getBoundingClientRect().left;
-                let shiftY = event.clientY - p.getBoundingClientRect().top;
+            // Həm siçan, həm də toxunuş üçün funksiya
+            const onMove = (e) => {
+                e.preventDefault();
+                let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                let clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-                function moveAt(pageX, pageY) {
-                    let newLeft = pageX - pitch.offsetLeft - shiftX;
-                    let newTop = pageY - pitch.offsetTop - shiftY;
+                let rect = pitch.getBoundingClientRect();
+                let x = clientX - rect.left - 22; // 22 mərkəzləşdirmək üçündür
+                let y = clientY - rect.top - 22;
 
-                    // Meydança sərhədləri daxilində saxla
-                    if (newLeft < 0) newLeft = 0;
-                    if (newTop < 0) newTop = 0;
-                    if (newLeft > pitch.clientWidth - 45) newLeft = pitch.clientWidth - 45;
-                    if (newTop > pitch.clientHeight - 45) newTop = pitch.clientHeight - 45;
+                // Sərhədlər
+                if (x < 0) x = 0;
+                if (y < 0) y = 0;
+                if (x > rect.width - 45) x = rect.width - 45;
+                if (y > rect.height - 45) y = rect.height - 45;
 
-                    p.style.left = newLeft + 'px';
-                    p.style.top = newTop + 'px';
-                }
-
-                function onMouseMove(event) {
-                    moveAt(event.pageX, event.pageY);
-                }
-
-                document.addEventListener('mousemove', onMouseMove);
-
-                document.onmouseup = function() {
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.onmouseup = null;
-                };
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
             };
 
-            p.ondragstart = function() { return false; };
-            pitch.appendChild(p);
-        }
+            // Eventləri bağlayırıq
+            p.addEventListener('mousedown', () => {
+                document.addEventListener('mousemove', onMove);
+            });
 
-        function createBenchPlayer(name) {
-            const bP = document.createElement('div');
-            bP.className = 'bench-player';
-            bP.innerHTML = `<span>${name}</span> <b>(Yedək)</b>`;
-            benchList.appendChild(bP);
+            p.addEventListener('touchstart', (e) => {
+                document.addEventListener('touchmove', onMove, { passive: false });
+            });
+
+            document.addEventListener('mouseup', () => {
+                document.removeEventListener('mousemove', onMove);
+            });
+
+            document.addEventListener('touchend', () => {
+                document.removeEventListener('touchmove', onMove);
+            });
+
+            pitch.appendChild(p);
         }
     </script>
 </body>
